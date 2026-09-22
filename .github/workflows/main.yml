@@ -1,0 +1,32 @@
+name: Python CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+
+    env:
+      LOGSTASH_URL: ${{ secrets.LOGSTASH_URL }}
+      APP_NAME: my-python-app
+      APP_ENV: ci
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Run app
+        run: python app.py
+
+      - name: Send final status to ELK
+        if: always()
+        env:
+          JOB_STATUS: ${{ job.status }}
+        run: python send_log.py
+        
